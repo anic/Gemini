@@ -33,6 +33,20 @@ libs.mode = function (obj) {
     return oc
 };
 
+libs.confirm = function(vm, message, okfun){
+    let text = message;
+    vm.$Modal.confirm({
+        title: '确认',
+        cancelText: '取消',
+        content: text,
+        okText: '确定',
+        closable: true,
+        onOk: () => {
+            okfun();
+        }
+    });
+};
+
 libs.err_notice = function (vm, err) {
     let text = err;
     if (err.response !== undefined) {

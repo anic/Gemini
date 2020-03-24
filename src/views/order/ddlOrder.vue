@@ -106,7 +106,7 @@
                     <Button
                             type="success"
                             class="margin-left-10"
-                            @click="commitOrder"
+                            @click="commitOrder(false)"
                             :disabled="validate_gen"
                     >提交工单
                     </Button>
@@ -301,6 +301,9 @@
                                 } else {
                                     this.validate_gen = true
                                 }
+                                    
+                                //始终允许提交，在审核时进行确认
+                                this.validate_gen = false;
                                 this.loading = false
                             })
                             .catch(err => {
@@ -312,9 +315,18 @@
                     }
                 })
             },
-            commitOrder() {
+            commitOrder(ignoreErrors) {
                 this.$refs['formItem'].validate((valid) => {
                     if (valid) {
+                        if (this.testResults.length > 0 && !ignoreErrors) {
+                          this.$config.confirm(
+                            this,
+                            "提交的SQL语句不符合规范，是否继续提交",
+                            () => this.commitOrder(true)
+                          );
+                          return;
+                        }
+
                         axios.post(`${this.$config.url}/sql/refer`, {
                             'ddl': this.formItem,
                             'sql': this.formDynamic,

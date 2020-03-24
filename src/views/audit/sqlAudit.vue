@@ -186,11 +186,11 @@
         <template v-if="multi">
           <Button type="error" @click="rejectTo()">驳回</Button>
           <Button type="success" @click="agreedTo()" :disabled="summit" v-if="auth === 'admin'">同意</Button>
-          <Button type="success" @click="performTo()" v-else-if="auth === 'perform'">执行</Button>
+          <Button type="success" @click="performTo(false)" v-else-if="auth === 'perform'">执行</Button>
         </template>
         <template v-else>
           <Button type="error" @click="rejectTo()">驳回</Button>
-          <Button type="success" @click="performTo()" :disabled="summit">执行</Button>
+          <Button type="success" @click="performTo(false)" :disabled="summit">执行</Button>
         </template>
       </div>
     </Modal>
@@ -349,6 +349,7 @@
                 ],
                 modal2: false,
                 sql: [],
+                gen: 0, 
                 formitem: {},
                 summit: true,
                 reject: {
@@ -457,7 +458,16 @@
                         })
                 }
             },
-            performTo() {
+            performTo(ignoreErrors) {
+                if (this.gen > 0 && !ignoreErrors) {
+                  this.$config.confirm(
+                    this,
+                    "提交的SQL语句不符合规范，是否继续执行",
+                    () => this.performTo(true)
+                  );
+                  return;
+                }
+
                 this.modal2 = false;
                 axios.post(`${this.$config.url}/audit/execute`, {
                     'workid': this.formitem.WorkId
@@ -493,17 +503,19 @@
                 })
                     .then(res => {
                         this.sql = res.data;
-                        let gen = 0;
+                        this.gen = 0;
                         this.sql.forEach(vl => {
                             if (vl.Level !== 0) {
-                                gen += 1
+                                this.gen += 1
                             }
                         });
-                        if (gen === 0) {
+                        if (this.gen === 0) {
                             this.summit = false
                         } else {
                             this.summit = true
                         }
+                        //始终允许提交，在审核时进行确认
+                        this.summit = false
                         this.loading = false
                     })
                     .catch(error => {
