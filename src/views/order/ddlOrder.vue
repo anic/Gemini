@@ -152,6 +152,7 @@
                 },
                 tabs: 'order1',
                 formDynamic: '',
+                gen: 0,
                 validate_gen: true,
                 wordList: [],
                 testResults: [],
@@ -290,13 +291,13 @@
                         })
                             .then(res => {
                                 this.testResults = res.data;
-                                let gen = 0;
+                                this.gen = 0;
                                 this.testResults.forEach(vl => {
                                     if (vl.Level !== 0) {
-                                        gen += 1
+                                        this.gen += 1
                                     }
                                 });
-                                if (gen === 0) {
+                                if (this.gen === 0) {
                                     this.validate_gen = false
                                 } else {
                                     this.validate_gen = true
@@ -318,7 +319,7 @@
             commitOrder(ignoreErrors) {
                 this.$refs['formItem'].validate((valid) => {
                     if (valid) {
-                        if (this.testResults.length > 0 && !ignoreErrors) {
+                        if (this.gen > 0 && !ignoreErrors) {
                           this.$config.confirm(
                             this,
                             "提交的SQL语句不符合规范，是否继续提交",
